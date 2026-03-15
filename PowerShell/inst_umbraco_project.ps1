@@ -129,7 +129,7 @@ if ($installExtras -match '^(y|yes)$') {
 
 # 6. Completion
 Write-Host "`nUmbraco project '$projectName' is ready!" -ForegroundColor Cyan
-Write-Host "Credentials: User: DOTGL | Password: !Sofie3900"
+Write-Host "Credentials: Email: $UsrEmail | Password: $UsrPassword"
 Write-Host "Tip: If the database error persists, delete the .db file and run 'dotnet run' manually."
 
 $answer = Read-Host "`nWould you like to open the solution in Visual Studio now? (yes/no)"
