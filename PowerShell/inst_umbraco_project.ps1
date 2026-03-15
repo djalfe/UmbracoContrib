@@ -64,6 +64,62 @@ $config = @{
 $config | ConvertTo-Json -Depth 10 | Out-File -FilePath "./www/appsettings.Development.json" -Encoding utf8
 Write-Host "appsettings.Development.json created with Unattended Install configuration."
 
+# 3.5 Override Program.cs with ForwardedHeaders support
+Write-Host "Updating Program.cs with ForwardedHeaders..." -ForegroundColor Gray
+
+$programCsContent = @"
+using Microsoft.AspNetCore.HttpOverrides;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+// Forwarded Headers Konfiguration
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    // Clear standard network (importent if you are behind a proxy)
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+builder.CreateUmbracoBuilder()
+    .AddBackOffice()
+    .AddWebsite()
+    .AddComposers()
+    .Build();
+
+WebApplication app = builder.Build();
+
+app.UseForwardedHeaders();
+
+await app.BootUmbracoAsync();
+
+
+app.UseUmbraco()
+    .WithMiddleware(u =>
+    {
+        u.UseBackOffice();
+        u.UseWebsite();
+    })
+    .WithEndpoints(u =>
+    {
+        u.UseBackOfficeEndpoints();
+        u.UseWebsiteEndpoints();
+    });
+
+await app.RunAsync();
+"@
+
+$programCsPath = "./www/Program.cs"
+
+# Vi tjekker om filen findes (den burde være der efter dotnet new umbraco)
+if (Test-Path $programCsPath) {
+    Set-Content -Path $programCsPath -Value $programCsContent -Encoding utf8
+    Write-Host "Program.cs updated successfully." -ForegroundColor Green
+} else {
+    Write-Host "Warning: Program.cs not found at $programCsPath" -ForegroundColor Yellow
+}
+
 # 4. Initial Database Setup (Clean Boot)
 Write-Host "`nStarting Umbraco for initial database setup..." -ForegroundColor Yellow
 Set-Location "./www"
