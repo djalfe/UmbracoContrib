@@ -112,7 +112,7 @@ await app.RunAsync();
 
 $programCsPath = "./www/Program.cs"
 
-# Vi tjekker om filen findes (den burde være der efter dotnet new umbraco)
+# Checking if the file exists (it should be there after 'dotnet new umbraco')
 if (Test-Path $programCsPath) {
     Set-Content -Path $programCsPath -Value $programCsContent -Encoding utf8
     Write-Host "Program.cs updated successfully." -ForegroundColor Green
